@@ -32,7 +32,7 @@ public class NettyRpcClientHandler extends ChannelInboundHandlerAdapter {
             if (msg instanceof RpcMessage) {
                 RpcMessage rpcMessage = (RpcMessage) msg;
                 if (rpcMessage.getMessageType() == RpcConstants.HEARTBEAT_RESPONSE_TYPE) {
-                    log.info("heart response：{}", rpcMessage.getData());
+                    log.debug("heart response：{}", rpcMessage.getData());
                 }
                 if (rpcMessage.getMessageType() == RpcConstants.RESPONSE_TYPE) {
                     RpcResponse response = (RpcResponse) rpcMessage.getData();
@@ -53,7 +53,7 @@ public class NettyRpcClientHandler extends ChannelInboundHandlerAdapter {
             IdleState state = ((IdleStateEvent) evt).state();
             // 发送心跳包（PING）
             if (state == IdleState.WRITER_IDLE) {
-                log.info("send heart request [{}]", ctx.channel().remoteAddress());
+                log.debug("send heart request [{}]", ctx.channel().remoteAddress());
                 Channel channel = nettyRpcClient.getChannel((InetSocketAddress) ctx.channel().remoteAddress());
                 // 不用设置data，设置心跳类型即可
                 RpcMessage rpcMessage = RpcMessage.builder()
