@@ -1,4 +1,4 @@
-package github.bx.remoting.transport.codec;
+package github.bx.remoting.transport.netty.codec;
 
 import github.bx.exception.RpcException;
 import github.bx.factory.SingletonFactory;

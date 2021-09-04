@@ -55,11 +55,11 @@ public class NettyRpcClientHandler extends ChannelInboundHandlerAdapter {
             if (state == IdleState.WRITER_IDLE) {
                 log.info("send heart request [{}]", ctx.channel().remoteAddress());
                 Channel channel = nettyRpcClient.getChannel((InetSocketAddress) ctx.channel().remoteAddress());
+                // 不用设置data，设置心跳类型即可
                 RpcMessage rpcMessage = RpcMessage.builder()
                         .messageType(RpcConstants.HEARTBEAT_REQUEST_TYPE)
                         .codec((byte) 1)
                         .compress((byte) 1)
-                        .data(RpcConstants.PING)
                         .build();
                 channel.writeAndFlush(rpcMessage).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
             }

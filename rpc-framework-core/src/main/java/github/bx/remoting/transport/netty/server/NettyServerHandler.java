@@ -33,8 +33,8 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
                 Channel channel = ctx.channel();
 
                 if (messageType == RpcConstants.HEARTBEAT_REQUEST_TYPE) {
+                    // 设置消息类型即可，不用把 PONG 放入data，对端解码器会根据心跳类型直接放入对应
                     responseMsg.setMessageType(RpcConstants.HEARTBEAT_RESPONSE_TYPE);
-                    responseMsg.setData(RpcConstants.PONG);
                 } else if (messageType == RpcConstants.REQUEST_TYPE) {
                     RpcResponse rpcResponse;
 

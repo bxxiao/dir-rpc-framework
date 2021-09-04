@@ -1,5 +1,6 @@
-package github.bx.remoting.transport.codec;
+package github.bx.remoting.transport.netty.codec;
 
+import github.bx.exception.RpcException;
 import github.bx.factory.SingletonFactory;
 import github.bx.remoting.constants.RpcConstants;
 import github.bx.remoting.dto.RpcMessage;
@@ -37,13 +38,18 @@ public class RpcMessageEncoder extends MessageToByteEncoder<RpcMessage> {
             // fullLength是指整个报文的长度
             int fullLength = RpcConstants.HEAD_LENGTH;
             byte[] bytes = null;
-            if ((messageType != RpcConstants.HEARTBEAT_REQUEST_TYPE
-                    && messageType != RpcConstants.HEARTBEAT_RESPONSE_TYPE) &&
-                    (messageType == RpcConstants.REQUEST_TYPE || messageType == RpcConstants.RESPONSE_TYPE)) {
+            /*
+            * 消息类型是 rpc 请求或响应中的一种，进行序列化
+            * 如果不是这 2 钟之一，且不是心跳机制类型，则抛出异常
+            * */
+            if (messageType == RpcConstants.REQUEST_TYPE || messageType == RpcConstants.RESPONSE_TYPE) {
                 Object data = msg.getData();
                 Serializer serializer = SingletonFactory.getInstance(KryoSerializer.class);
                 bytes = serializer.serialize(data);
                 fullLength += bytes.length;
+            } else if (messageType != RpcConstants.HEARTBEAT_REQUEST_TYPE
+                    && messageType != RpcConstants.HEARTBEAT_RESPONSE_TYPE) {
+                throw new RpcException("no such message type: " + messageType);
             }
 
             if (bytes != null)
@@ -52,7 +58,7 @@ public class RpcMessageEncoder extends MessageToByteEncoder<RpcMessage> {
             int lastIndex = out.writerIndex();
             out.writerIndex(lastIndex - fullLength + RpcConstants.MAGIC_CODE.length + 1);
             out.writeInt(fullLength);
-            // 把写索引又移动到组后了
+            // 把写索引又移动到最后了
             out.writerIndex(lastIndex);
         } catch (Exception e) {
             log.info("encode error:[{}]", e);
