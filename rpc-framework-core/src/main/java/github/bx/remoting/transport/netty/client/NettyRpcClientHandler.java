@@ -36,7 +36,10 @@ public class NettyRpcClientHandler extends ChannelInboundHandlerAdapter {
                 }
                 if (rpcMessage.getMessageType() == RpcConstants.RESPONSE_TYPE) {
                     RpcResponse response = (RpcResponse) rpcMessage.getData();
-                    unprocessedRequest.complete(response);
+                    if (unprocessedRequest.complete(response))
+                        log.info("receive rpc response, request id: {}", response.getRequestId());
+                    else
+                        log.error("no request for this response, request id: {}", response.getRequestId());
                 }
             }
         } finally {

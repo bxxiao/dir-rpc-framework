@@ -21,11 +21,13 @@ public class UnprocessedRequest {
         unprocessedMap.remove(requestId);
     }
 
-    public void complete(RpcResponse rpcResponse) {
+    public boolean complete(RpcResponse rpcResponse) {
         String requestId = rpcResponse.getRequestId();
         CompletableFuture<RpcResponse<Object>> future = unprocessedMap.remove(requestId);
-        if (future != null) {
-            future.complete(rpcResponse);
-        }
+        if (future == null)
+            return false;
+
+        future.complete(rpcResponse);
+        return true;
     }
 }

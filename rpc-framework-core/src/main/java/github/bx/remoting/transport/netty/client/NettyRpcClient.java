@@ -1,5 +1,6 @@
 package github.bx.remoting.transport.netty.client;
 
+import github.bx.exception.RpcException;
 import github.bx.factory.SingletonFactory;
 import github.bx.remoting.constants.RpcConstants;
 import github.bx.remoting.dto.RpcMessage;
@@ -18,6 +19,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleStateHandler;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
@@ -72,7 +74,7 @@ public class NettyRpcClient implements RpcTransport {
             serverChannel.writeAndFlush(rpcMessage).addListener((ChannelFutureListener) future -> {
                 if (future.isSuccess()) {
                     unprocessedRequest.add(request.getRequestId(), resultFuture);
-                    log.info("client send message: [{}]", rpcMessage);
+                    log.info("client send rpc request: [{}]", rpcMessage);
                 } else {
                     future.channel().close();
                     resultFuture.completeExceptionally(future.cause());
@@ -95,14 +97,23 @@ public class NettyRpcClient implements RpcTransport {
         return channel;
     }
 
+    /**
+     * @SneakyThrows 注解可以为方法的代码生成一个try...catch块，并把异常向上抛
+     */
+    @SneakyThrows
     private Channel doConnect(InetSocketAddress serviceAddress) {
-        Channel channel = null;
-        try {
-            channel = bootstrap.connect(serviceAddress).sync().channel();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return channel;
+        CompletableFuture<Channel> result = new CompletableFuture<>();
+
+        bootstrap.connect(serviceAddress).addListener((ChannelFutureListener)future -> {
+            if (future.isSuccess()) {
+                log.info("Connect to server [{}]", serviceAddress.toString());
+                result.complete(future.channel());
+            } else {
+                throw new RpcException("connect to server failed, server ip: {}" + serviceAddress.toString());
+            }
+        });
+
+        return result.get();
     }
 
 

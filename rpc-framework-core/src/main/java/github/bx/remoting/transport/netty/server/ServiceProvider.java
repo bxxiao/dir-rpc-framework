@@ -7,9 +7,7 @@ import github.bx.remoting.registrar.ServiceRegistrar;
 import github.bx.remoting.registrar.impl.zk.ZkServiceRegistrarImpl;
 import lombok.extern.slf4j.Slf4j;
 
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -20,7 +18,6 @@ public class ServiceProvider {
 
     public ServiceProvider() {
         serviceMap = new ConcurrentHashMap<>();
-        // TODO:修改...
         registrar = SingletonFactory.getInstance(ZkServiceRegistrarImpl.class);
     }
 
@@ -38,16 +35,17 @@ public class ServiceProvider {
         return serviceObj;
     }
 
-    public void publicService(RpcServiceConfig config) {
+    public void publishService(RpcServiceConfig config) {
         String rpcServiceName = config.getRpcServiceName();
         if (serviceMap.containsKey(rpcServiceName))
             return;
 
         this.addService(config);
         try {
-            String host = InetAddress.getLocalHost().getHostAddress();
+            // String host = InetAddress.getLocalHost().getHostAddress();
+            String host = "127.0.0.1";
             registrar.registerService(rpcServiceName, new InetSocketAddress(host, NettyRpcServer.PORT));
-        } catch (UnknownHostException e) {
+        } catch (Exception e) {
             log.info("get local host failed");
         }
     }

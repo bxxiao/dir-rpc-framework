@@ -15,11 +15,12 @@ import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
-import java.net.InetAddress;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
+@Component
 public class NettyRpcServer {
 
     public static final int PORT = 6677;
@@ -31,7 +32,7 @@ public class NettyRpcServer {
     }
 
     public void registryService(RpcServiceConfig config) {
-        serviceProvider.publicService(config);
+        serviceProvider.publishService(config);
     }
 
     public void start() {
@@ -44,7 +45,8 @@ public class NettyRpcServer {
                 ThreadPoolFactoryUtils.createThreadFactory("service-handler-group", false)
         );
         try {
-            String host = InetAddress.getLocalHost().getHostAddress();
+            // String host = InetAddress.getLocalHost().getHostAddress();
+            String host = "127.0.0.1";
             bootstrap.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
                     .handler(new LoggingHandler(LogLevel.INFO))
